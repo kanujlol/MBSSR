@@ -47,14 +47,12 @@ def terminal():
                         </head>
                         <body>
                             <div class="terminal">
-$ Enter username: {{ username }}
-$ Enter password: {{ password }}
 $ Correct! Here's the flag:
 {{ flag }}
                             </div>
                         </body>
                     </html>
-                """, username=session['username'], password=session['password'], flag=FLAG)
+                """, flag=FLAG)
 
             else:
                 error_message = "Invalid password. Try again."
