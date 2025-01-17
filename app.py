@@ -1,68 +1,70 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template_string, session, redirect, url_for
 
 app = Flask(__name__)
+app.secret_key = "supersecretkey"  # This is required for session management
 
 # Sample username and password
 USERNAME = "sherlock"
-PASSWORD = "sherlock-ed"
+PASSWORD = "sherlock123"
 FLAG = "IET{$$MB}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
-    # Variables to store the state of input prompts
-    username = None
-    password = None
+    # Initialize session variables if not already set
+    if 'username' not in session:
+        session['username'] = None
+    if 'password' not in session:
+        session['password'] = None
     error_message = ""
-    
+
     if request.method == "POST":
-        if not username:
-            # If username is not yet entered, check the entered username
-            entered_username = request.form.get("input_text")
-            if entered_username == USERNAME:
-                username = entered_username
+        input_text = request.form.get("input_text")
+
+        if session['username'] is None:
+            # Check username
+            if input_text == USERNAME:
+                session['username'] = input_text
             else:
                 error_message = "Invalid username. Try again."
-        elif not password:
-            # If username is correct, check the entered password
-            entered_password = request.form.get("input_text")
-            if entered_password == PASSWORD:
-                password = entered_password
-            else:
-                error_message = "Invalid password. Try again."
-        
-        if username and password:
-            return render_template_string("""
-                <html>
-                    <head>
-                        <style>
-                            body {
-                                background-color: black;
-                                color: green;
-                                font-family: 'Courier New', monospace;
-                                padding: 20px;
-                            }
-                            .terminal {
-                                white-space: pre-wrap;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="terminal">
+        elif session['password'] is None:
+            # Check password
+            if input_text == PASSWORD:
+                session['password'] = input_text
+                return render_template_string("""
+                    <html>
+                        <head>
+                            <style>
+                                body {
+                                    background-color: black;
+                                    color: lightgreen;
+                                    font-family: 'Courier New', monospace;
+                                    padding: 20px;
+                                }
+                                .terminal {
+                                    white-space: pre-wrap;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="terminal">
 Welcome to the Interactive Terminal
 
 $ Enter username: {{ username }}
 $ Enter password: {{ password }}
 $ Correct! Here's the flag:
 {{ flag }}
-                        </div>
-                    </body>
-                </html>
-            """, username=username, password=password, flag=FLAG)
+                            </div>
+                        </body>
+                    </html>
+                """, username=session['username'], password=session['password'], flag=FLAG)
 
-    # If no username or password entered, ask for them
-    if not username:
+            else:
+                error_message = "Invalid password. Try again."
+
+    # Determine which prompt to show
+    if session['username'] is None:
         prompt = "Enter username: "
-    elif not password:
+    elif session['password'] is None:
         prompt = "Enter password: "
     else:
         prompt = ""
@@ -73,7 +75,7 @@ $ Correct! Here's the flag:
                 <style>
                     body {
                         background-color: black;
-                        color: green;
+                        color: lightgreen;
                         font-family: 'Courier New', monospace;
                         padding: 20px;
                     }
@@ -89,12 +91,12 @@ Welcome to the Interactive Terminal
 $ {{ error_message }}
 $ {{ prompt }}
 <form method="POST">
-    <input type="text" name="input_text" placeholder="Enter text" style="background: black; color: green; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; width: 100%;" autofocus required><br>
+    <input type="text" name="input_text" placeholder="Enter text" style="background: black; color: lightgreen; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; width: 100%;" autofocus required><br>
 </form>
                 </div>
             </body>
         </html>
-    """, error_message=error_message, prompt=prompt, username=username)
+    """, error_message=error_message, prompt=prompt)
 
 if __name__ == "__main__":
     app.run(debug=True)
