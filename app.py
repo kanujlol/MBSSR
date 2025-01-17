@@ -4,19 +4,33 @@ app = Flask(__name__)
 
 # Sample username and password
 USERNAME = "sherlock"
-PASSWORD = "sherlock123"
-FLAG = "flag{the_game_is_afoot}"
+PASSWORD = "sherlock-ed"
+FLAG = "flag{$$MB}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
+    # Variables to store the state of input prompts
+    username = None
+    password = None
     error_message = ""
+    
     if request.method == "POST":
-        # Get the username and password from the form
-        entered_username = request.form.get("username")
-        entered_password = request.form.get("password")
-
-        # Check if the username and password are correct
-        if entered_username == USERNAME and entered_password == PASSWORD:
+        if not username:
+            # If username is not yet entered, check the entered username
+            entered_username = request.form.get("username")
+            if entered_username == USERNAME:
+                username = entered_username
+            else:
+                error_message = "Invalid username. Try again."
+        elif not password:
+            # If username is correct, check the entered password
+            entered_password = request.form.get("password")
+            if entered_password == PASSWORD:
+                password = entered_password
+            else:
+                error_message = "Invalid password. Try again."
+        
+        if username and password:
             return render_template_string("""
                 <html>
                     <body>
@@ -30,9 +44,15 @@ $ Correct! Here's the flag:
                         </pre>
                     </body>
                 </html>
-            """, username=entered_username, password=entered_password, flag=FLAG)
-        else:
-            error_message = "Invalid username or password. Try again."
+            """, username=username, password=password, flag=FLAG)
+
+    # If no username or password entered, ask for them
+    if not username:
+        prompt = "Enter username: "
+    elif not password:
+        prompt = "Enter password: "
+    else:
+        prompt = ""
 
     return render_template_string("""
         <html>
@@ -41,15 +61,16 @@ $ Correct! Here's the flag:
 Welcome to the Interactive Terminal
 
 $ {{ error_message }}
-
-$ Enter username: <form method="POST"><input type="text" name="username" placeholder="Enter username" required><br>
-$ Enter password: <input type="password" name="password" placeholder="Enter password" required><br>
-$ <button type="submit">Submit</button></form>
+$ {{ prompt }}
+<form method="POST">
+    <input type="text" name="username" placeholder="Enter username" style="display: {{ 'none' if username else 'inline' }};" required><br>
+    <input type="password" name="password" placeholder="Enter password" style="display: {{ 'inline' if username else 'none' }};" required><br>
+    <button type="submit" style="display: none;"></button>
+</form>
                 </pre>
             </body>
         </html>
-    """, error_message=error_message)
-
+    """, error_message=error_message, prompt=prompt, username=username)
 
 if __name__ == "__main__":
     app.run(debug=True)
