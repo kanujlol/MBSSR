@@ -4,8 +4,8 @@ app = Flask(__name__)
 
 # Hardcoded credentials
 USERNAME = "sherlock"
-PASSWORD = "sherlock123"
-FLAG = "flag{the_game_is_afoot}"
+PASSWORD = "sherlock-ed"
+FLAG = "IET{$$MB}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
