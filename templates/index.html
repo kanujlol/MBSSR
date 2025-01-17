@@ -3,163 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cousine:wght@400;700&display=swap" rel="stylesheet">
+    <title>Interactive Terminal</title>
     <style>
         body {
-            font-family: 'Cousine', monospace;
+            font-family: 'Courier New', Courier, monospace;
             background-color: #121212;
             color: #ffffff;
-            text-align: center;
+            text-align: left;
             padding: 50px;
+        }
+        h1 {
+            color: #e74c3c;
         }
         .terminal {
             background-color: #1e1e1e;
-            color: #00ff00;
-            border-radius: 10px;
             padding: 20px;
-            max-width: 800px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
             margin: 0 auto;
-            font-size: 1.2em;
-            height: 400px;
-            overflow-y: scroll;
-            white-space: pre-wrap;
-            text-align: left;
-        }
-        .input-line {
-            display: flex;
-            justify-content: flex-start;
-        }
-        .input-line span {
-            margin-right: 5px;
-        }
-        .input-line input {
-            background-color: #121212;
-            border: none;
+            font-size: 18px;
             color: #00ff00;
-            font-family: 'Cousine', monospace;
-            font-size: 1.2em;
-            width: 100%;
+            white-space: pre-wrap;
+        }
+        input {
+            background-color: #1e1e1e;
+            color: #00ff00;
+            border: none;
             outline: none;
+            width: 100%;
+            font-size: 18px;
+            font-family: 'Courier New', Courier, monospace;
         }
-        .footer {
-            margin-top: 20px;
-            font-size: 0.9em;
-            color: #7f8c8d;
+        input:focus {
+            border-bottom: 2px solid #3498db;
         }
-        .hidden-message {
-            display: none;
-            color: #3498db;
-            font-style: italic;
+        .message {
+            color: #f39c12;
         }
     </style>
 </head>
 <body>
+    <h1>Welcome to the Interactive Terminal</h1>
     <div class="terminal" id="terminal">
-        <div>$ Please enter your username:</div>
-        <div class="input-line">
-            <span>$</span>
-            <input type="text" id="username-input" autofocus />
-        </div>
+        <div id="prompt">$ </div>
+        <input type="text" id="user-input" autocomplete="off" autofocus>
+        <div id="output"></div>
     </div>
-    <p class="hidden-message" id="hidden-message"></p>
 
     <script>
-        const terminal = document.getElementById("terminal");
-        const usernameInput = document.getElementById("username-input");
-        const hiddenMessage = document.getElementById("hidden-message");
+        const inputField = document.getElementById("user-input");
+        const outputDiv = document.getElementById("output");
 
-        // Function to simulate typing in terminal
-        function appendToTerminal(text) {
-            const div = document.createElement("div");
-            div.textContent = text;
-            terminal.appendChild(div);
-            terminal.scrollTop = terminal.scrollHeight; // Scroll to bottom
-        }
-
-        // Function to handle username input
-        function handleUsernameInput(inputText) {
-            appendToTerminal(`$ ${inputText}`);
-            fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username: inputText })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    appendToTerminal("$ Username accepted. Please enter your password:");
-                    showPasswordInput();
-                } else {
-                    appendToTerminal("$ Incorrect username. Try again.");
-                    showUsernameInput();
-                }
-            });
-        }
-
-        // Function to handle password input
-        function handlePasswordInput(inputText) {
-            appendToTerminal(`$ ${inputText}`);
-            fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ password: inputText })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    appendToTerminal("$ Password accepted.");
-                    appendToTerminal("$ Access granted. Here's your flag:");
-                    hiddenMessage.textContent = data.flag;
-                    hiddenMessage.style.display = "block"; // Show the flag
-                } else {
-                    appendToTerminal("$ Incorrect password. Try again.");
-                    showPasswordInput();
-                }
-            });
-        }
-
-        // Function to show username input field
-        function showUsernameInput() {
-            const usernameInputElement = document.createElement("input");
-            usernameInputElement.type = "text";
-            usernameInputElement.placeholder = "Enter username";
-            usernameInputElement.autofocus = true;
-            usernameInputElement.addEventListener("keydown", function(event) {
-                if (event.key === "Enter") {
-                    handleUsernameInput(usernameInputElement.value.trim());
-                    usernameInputElement.remove();
-                }
-            });
-            terminal.appendChild(usernameInputElement);
-            usernameInputElement.focus();
-        }
-
-        // Function to show password input field
-        function showPasswordInput() {
-            const passwordInputElement = document.createElement("input");
-            passwordInputElement.type = "password";
-            passwordInputElement.placeholder = "Enter password";
-            passwordInputElement.autofocus = true;
-            passwordInputElement.addEventListener("keydown", function(event) {
-                if (event.key === "Enter") {
-                    handlePasswordInput(passwordInputElement.value.trim());
-                    passwordInputElement.remove();
-                }
-            });
-            terminal.appendChild(passwordInputElement);
-            passwordInputElement.focus();
-        }
-
-        // Event listener for username input
-        usernameInput.addEventListener("keydown", function(event) {
+        inputField.addEventListener("keydown", function(event) {
             if (event.key === "Enter") {
-                const inputText = usernameInput.value.trim();
-                handleUsernameInput(inputText);
+                const userInput = inputField.value.trim();
+                inputField.value = ""; // Clear input field
+
+                // Show user input in terminal
+                const prompt = document.createElement("div");
+                prompt.textContent = "$ " + userInput;
+                outputDiv.appendChild(prompt);
+
+                if (userInput.startsWith("username")) {
+                    outputDiv.innerHTML += "<div class='message'>Enter your password:</div>";
+                    return;
+                }
+
+                if (userInput.startsWith("password")) {
+                    const password = userInput.split(" ")[1];
+                    fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `username=sherlock&password=${password}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === "Success") {
+                            outputDiv.innerHTML += "<div class='message'>Welcome Sherlock! " + data.flag + "</div>";
+                        } else {
+                            outputDiv.innerHTML += "<div class='message'>Invalid credentials. Try again.</div>";
+                        }
+                    })
+                    .catch(error => {
+                        outputDiv.innerHTML += "<div class='message'>Error: " + error.message + "</div>";
+                    });
+                }
             }
         });
     </script>
