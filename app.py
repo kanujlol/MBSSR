@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string, make_response
+from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
 
@@ -9,117 +9,68 @@ FLAG = "flag{the_game_is_afoot}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
-    # Initialize session data
-    username = request.cookies.get('username')
-    password = request.cookies.get('password')
+    # Variables to store the state of input prompts
+    username = None
+    password = None
     error_message = ""
-
+    
     if request.method == "POST":
-        input_text = request.form.get("input_text")
-
-        if username is None:
-            # Check username
-            if input_text == USERNAME:
-                username = input_text
-                response = make_response(render_template_string("""
-                    <html>
-                        <head>
-                            <style>
-                                body {
-                                    background-color: black;
-                                    color: lightgreen;
-                                    font-family: 'Courier New', monospace;
-                                    padding: 20px;
-                                }
-                                .terminal {
-                                    white-space: pre-wrap;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="terminal">
-$ Correct username. Enter password:
-<form method="POST">
-    <input type="text" name="input_text" placeholder="Enter text" style="background: black; color: lightgreen; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; width: 100%;" autofocus required><br>
-</form>
-                            </div>
-                        </body>
-                    </html>
-                """))
-                response.set_cookie('username', username)
-                return response
+        if not username:
+            # If username is not yet entered, check the entered username
+            entered_username = request.form.get("username")
+            if entered_username == USERNAME:
+                username = entered_username
             else:
                 error_message = "Invalid username. Try again."
-        elif password is None:
-            # Check password
-            if input_text == PASSWORD:
-                password = input_text
-                return render_template_string("""
-                    <html>
-                        <head>
-                            <style>
-                                body {
-                                    background-color: black;
-                                    color: lightgreen;
-                                    font-family: 'Courier New', monospace;
-                                    padding: 20px;
-                                }
-                                .terminal {
-                                    white-space: pre-wrap;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="terminal">
-$ Correct! Here's the flag:
-{{ flag }}
-                            </div>
-                        </body>
-                    </html>
-                """, flag=FLAG)
+        elif not password:
+            # If username is correct, check the entered password
+            entered_password = request.form.get("password")
+            if entered_password == PASSWORD:
+                password = entered_password
             else:
                 error_message = "Invalid password. Try again."
+        
+        if username and password:
+            return render_template_string("""
+                <html>
+                    <body>
+                        <pre>
+Welcome to the Interactive Terminal
 
-    # Determine which prompt to show
-    if username is None:
+$ Enter username: {{ username }}
+$ Enter password: {{ password }}
+$ Correct! Here's the flag:
+{{ flag }}
+                        </pre>
+                    </body>
+                </html>
+            """, username=username, password=password, flag=FLAG)
+
+    # If no username or password entered, ask for them
+    if not username:
         prompt = "Enter username: "
-    elif password is None:
+    elif not password:
         prompt = "Enter password: "
     else:
         prompt = ""
 
-    response = make_response(render_template_string("""
+    return render_template_string("""
         <html>
-            <head>
-                <style>
-                    body {
-                        background-color: black;
-                        color: lightgreen;
-                        font-family: 'Courier New', monospace;
-                        padding: 20px;
-                    }
-                    .terminal {
-                        white-space: pre-wrap;
-                    }
-                </style>
-            </head>
             <body>
-                <div class="terminal">
+                <pre>
+Welcome to the Interactive Terminal
+
 $ {{ error_message }}
 $ {{ prompt }}
 <form method="POST">
-    <input type="text" name="input_text" placeholder="Enter text" style="background: black; color: lightgreen; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; width: 100%;" autofocus required><br>
+    <input type="text" name="username" placeholder="Enter username" style="display: {{ 'none' if username else 'inline' }};" required><br>
+    <input type="password" name="password" placeholder="Enter password" style="display: {{ 'inline' if username else 'none' }};" required><br>
+    <button type="submit" style="display: none;"></button>
 </form>
-                </div>
+                </pre>
             </body>
         </html>
-    """, error_message=error_message, prompt=prompt))
-
-    # Save the session data in cookies
-    response.set_cookie('username', username if username else "")
-    response.set_cookie('password', password if password else "")
-
-    return response
+    """, error_message=error_message, prompt=prompt, username=username)
 
 if __name__ == "__main__":
     app.run(debug=True)
