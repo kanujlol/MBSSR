@@ -10,11 +10,18 @@ FLAG = "flag{the_game_is_afoot}"
 @app.route("/", methods=["GET", "POST"])
 def terminal():
     # Initialize variables to keep track of input
-    session_data = {
-        'username': None,
-        'password': None,
-        'error_message': ""
-    }
+    if 'username' not in request.cookies:
+        session_data = {
+            'username': None,
+            'password': None,
+            'error_message': ""
+        }
+    else:
+        session_data = {
+            'username': request.cookies.get('username'),
+            'password': request.cookies.get('password'),
+            'error_message': ""
+        }
 
     if request.method == "POST":
         input_text = request.form.get("input_text")
@@ -64,7 +71,7 @@ $ Correct! Here's the flag:
     else:
         prompt = ""
 
-    return render_template_string("""
+    response = render_template_string("""
         <html>
             <head>
                 <style>
@@ -90,6 +97,12 @@ $ {{ prompt }}
             </body>
         </html>
     """, error_message=session_data['error_message'], prompt=prompt)
+
+    # Save the session data in cookies
+    response.set_cookie('username', session_data['username'])
+    response.set_cookie('password', session_data['password'])
+
+    return response
 
 if __name__ == "__main__":
     app.run(debug=True)
