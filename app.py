@@ -14,21 +14,22 @@ def terminal():
     error_message = ""
     
     if request.method == "POST":
+        # First check for username
         if not username:
-            # If username is not yet entered, check the entered username
             entered_username = request.form.get("username")
             if entered_username == USERNAME:
                 username = entered_username
             else:
                 error_message = "Invalid username. Try again."
+        # Then check for password if username is correct
         elif not password:
-            # If username is correct, check the entered password
             entered_password = request.form.get("password")
             if entered_password == PASSWORD:
                 password = entered_password
             else:
                 error_message = "Invalid password. Try again."
         
+        # If both username and password are correct, show the flag
         if username and password:
             return render_template_string("""
                 <html>
