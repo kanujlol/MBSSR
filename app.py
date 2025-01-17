@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string, request, jsonify
 
 app = Flask(__name__)
 
@@ -9,64 +9,21 @@ FLAG = "flag{the_game_is_afoot}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
-    # Initialize variables for username and password
-    username = None
-    password = None
-    error_message = ""
-
-    # Check if the form is submitted
+    # Check if POST request is made for validation
     if request.method == "POST":
-        if username is None:  # Check username first
-            entered_username = request.form.get("username")
-            if entered_username == USERNAME:
-                username = entered_username
+        username = request.json.get("username")
+        password = request.json.get("password")
+        
+        # Validate username and password
+        if username == USERNAME:
+            if password == PASSWORD:
+                return jsonify({"status": "success", "flag": FLAG})
             else:
-                error_message = "Invalid username. Try again."
-        elif password is None:  # Then check password
-            entered_password = request.form.get("password")
-            if entered_password == PASSWORD:
-                password = entered_password
-            else:
-                error_message = "Invalid password. Try again."
-
-    # If both username and password are correct, show the flag
-    if username and password:
-        return render_template_string("""
-            <html>
-                <head>
-                    <style>
-                        body {
-                            background-color: black;
-                            color: green;
-                            font-family: 'Cousine', monospace;
-                            padding: 20px;
-                        }
-                        .terminal {
-                            white-space: pre-wrap;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="terminal">
-                        Welcome to the Interactive Terminal
-
-                        $ Username: {{ username }}
-                        $ Password: {{ password }}
-                        $ Correct! Here's the flag:
-                        {{ flag }}
-                    </div>
-                </body>
-            </html>
-        """, username=username, password=password, flag=FLAG)
-
-    # If no username or password entered, ask for them
-    if username is None:
-        prompt = "Enter username: "
-    elif password is None:
-        prompt = "Enter password: "
-    else:
-        prompt = ""
-
+                return jsonify({"status": "error", "message": "Invalid password"})
+        else:
+            return jsonify({"status": "error", "message": "Invalid username"})
+    
+    # If not a POST request, show the terminal
     return render_template_string("""
         <html>
             <head>
@@ -95,18 +52,59 @@ def terminal():
             </head>
             <body>
                 <div class="terminal">
-                    Welcome to the Interactive Terminal
-
-                    $ {{ error_message }}
-                    $ {{ prompt }}
-                    <form method="POST" action="/">
-                        <input type="text" name="username" placeholder="Enter username" style="display: {{ 'none' if username else 'inline' }};" required autofocus><br>
-                        <input type="password" name="password" placeholder="Enter password" style="display: {{ 'inline' if username else 'none' }};" required><br>
-                    </form>
+                    Welcome to the Interactive Terminal<br><br>
+                    <div id="output"></div>
+                    <input id="input" type="text" autofocus />
                 </div>
+                <script>
+                    let stage = 0; // 0 for username, 1 for password
+                    let username = '';
+                    let password = '';
+                    
+                    document.getElementById('input').addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            let inputText = document.getElementById('input').value;
+                            let outputDiv = document.getElementById('output');
+                            
+                            if (stage === 0) {
+                                // Handle username
+                                username = inputText;
+                                outputDiv.innerHTML += '$ Username: ' + username + '<br>';
+                                outputDiv.innerHTML += '$ Enter password: <input id="input" type="password" autofocus /><br>';
+                                stage = 1;
+                            } else if (stage === 1) {
+                                // Handle password
+                                password = inputText;
+                                outputDiv.innerHTML += '$ Password: ' + password + '<br>';
+                                
+                                // Send username and password to Flask for validation
+                                fetch('/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({username: username, password: password})
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.status === "success") {
+                                        outputDiv.innerHTML += 'Correct! Flag: ' + data.flag + '<br>';
+                                    } else {
+                                        outputDiv.innerHTML += data.message + '<br>';
+                                        stage = 0;
+                                        outputDiv.innerHTML += '$ Enter username: <input id="input" type="text" autofocus /><br>';
+                                    }
+                                });
+                            }
+                            
+                            // Clear input field
+                            document.getElementById('input').value = '';
+                        }
+                    });
+                </script>
             </body>
         </html>
-    """, error_message=error_message, prompt=prompt, username=username)
+    """)
 
 if __name__ == "__main__":
     app.run(debug=True)
