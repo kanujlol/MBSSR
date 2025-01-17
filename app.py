@@ -33,15 +33,28 @@ def terminal():
         if username and password:
             return render_template_string("""
                 <html>
+                    <head>
+                        <style>
+                            body {
+                                background-color: black;
+                                color: green;
+                                font-family: 'Cousine', monospace;
+                                padding: 20px;
+                            }
+                            .terminal {
+                                white-space: pre-wrap;
+                            }
+                        </style>
+                    </head>
                     <body>
-                        <pre>
-Welcome to the Interactive Terminal
+                        <div class="terminal">
+                            Welcome to the Interactive Terminal
 
-$ Enter username: {{ username }}
-$ Enter password: {{ password }}
-$ Correct! Here's the flag:
-{{ flag }}
-                        </pre>
+                            $ Enter username: {{ username }}
+                            $ Enter password: {{ password }}
+                            $ Correct! Here's the flag:
+                            {{ flag }}
+                        </div>
                     </body>
                 </html>
             """, username=username, password=password, flag=FLAG)
@@ -56,18 +69,42 @@ $ Correct! Here's the flag:
 
     return render_template_string("""
         <html>
+            <head>
+                <style>
+                    body {
+                        background-color: black;
+                        color: green;
+                        font-family: 'Cousine', monospace;
+                        padding: 20px;
+                    }
+                    .terminal {
+                        white-space: pre-wrap;
+                    }
+                    input {
+                        background-color: black;
+                        color: green;
+                        border: none;
+                        border-bottom: 1px solid green;
+                        font-family: 'Cousine', monospace;
+                        font-size: 18px;
+                    }
+                    input:focus {
+                        outline: none;
+                    }
+                </style>
+            </head>
             <body>
-                <pre>
-Welcome to the Interactive Terminal
+                <div class="terminal">
+                    Welcome to the Interactive Terminal
 
-$ {{ error_message }}
-$ {{ prompt }}
-<form method="POST">
-    <input type="text" name="username" placeholder="Enter username" style="display: {{ 'none' if username else 'inline' }};" required><br>
-    <input type="password" name="password" placeholder="Enter password" style="display: {{ 'inline' if username else 'none' }};" required><br>
-    <button type="submit" style="display: none;"></button>
-</form>
-                </pre>
+                    $ {{ error_message }}
+                    $ {{ prompt }}
+                    <form method="POST">
+                        <input type="text" name="username" placeholder="Enter username" style="display: {{ 'none' if username else 'inline' }};" required><br>
+                        <input type="password" name="password" placeholder="Enter password" style="display: {{ 'inline' if username else 'none' }};" required><br>
+                        <button type="submit" style="display: none;"></button>
+                    </form>
+                </div>
             </body>
         </html>
     """, error_message=error_message, prompt=prompt, username=username)
