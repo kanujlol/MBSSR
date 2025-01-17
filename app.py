@@ -94,5 +94,6 @@ $ {{ prompt }}
         </html>
     """, error_message=error_message, prompt=prompt)
 
+
 if __name__ == "__main__":
     app.run(debug=True)
