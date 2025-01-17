@@ -63,7 +63,6 @@ def terminal():
             </head>
             <body>
                 <div class="terminal">
-                    Welcome to the Interactive Terminal<br><br>
                     <div id="output"></div>
                     <input id="username" type="text" placeholder="Username" autofocus /><br>
                     <input id="password" type="password" placeholder="Password" /><br>
