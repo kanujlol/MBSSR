@@ -91,7 +91,7 @@ def terminal():
                                         outputDiv.innerHTML += 'Correct! Flag: ' + data.flag + '<br>';
                                     } else {
                                         outputDiv.innerHTML += data.message + '<br>';
-                                        stage = 0;
+                                        stage = 0; // Reset to ask for username again
                                         outputDiv.innerHTML += '$ Enter username: <input id="input" type="text" autofocus /><br>';
                                     }
                                 });
@@ -101,6 +101,12 @@ def terminal():
                             document.getElementById('input').value = '';
                         }
                     });
+
+                    // Start by asking for the username
+                    window.onload = function() {
+                        let outputDiv = document.getElementById('output');
+                        outputDiv.innerHTML += '$ Enter username: <input id="input" type="text" autofocus /><br>';
+                    };
                 </script>
             </body>
         </html>
