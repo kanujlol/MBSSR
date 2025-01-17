@@ -1,7 +1,7 @@
-from flask import Flask, request, render_template_string, session, redirect, url_for
+from flask import Flask, request, render_template_string, session
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # This is required for session management
+app.secret_key = "supersecretkey"  # Required for session management
 
 # Sample username and password
 USERNAME = "sherlock"
@@ -93,7 +93,6 @@ $ {{ prompt }}
             </body>
         </html>
     """, error_message=error_message, prompt=prompt)
-
 
 if __name__ == "__main__":
     app.run(debug=True)
