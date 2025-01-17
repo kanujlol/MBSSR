@@ -15,13 +15,12 @@ def terminal():
         password = request.json.get("password")
         
         # Validate username and password
-        if username == USERNAME:
-            if password == PASSWORD:
-                return jsonify({"status": "success", "flag": FLAG})
-            else:
-                return jsonify({"status": "error", "message": "Invalid password"})
-        else:
+        if username == USERNAME and password == PASSWORD:
+            return jsonify({"status": "success", "flag": FLAG})
+        elif username != USERNAME:
             return jsonify({"status": "error", "message": "Invalid username"})
+        else:
+            return jsonify({"status": "error", "message": "Invalid password"})
     
     # If not a POST request, show the terminal
     return render_template_string("""
@@ -54,59 +53,37 @@ def terminal():
                 <div class="terminal">
                     Welcome to the Interactive Terminal<br><br>
                     <div id="output"></div>
-                    <input id="input" type="text" autofocus />
+                    <input id="username" type="text" placeholder="Username" autofocus /><br>
+                    <input id="password" type="password" placeholder="Password" /><br>
+                    <button id="submitBtn" onclick="submitCredentials()">Submit</button>
                 </div>
                 <script>
-                    let stage = 0; // 0 for username, 1 for password
-                    let username = '';
-                    let password = '';
-                    
-                    document.getElementById('input').addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            let inputText = document.getElementById('input').value;
-                            let outputDiv = document.getElementById('output');
-                            
-                            if (stage === 0) {
-                                // Handle username
-                                username = inputText;
-                                outputDiv.innerHTML += '$ Username: ' + username + '<br>';
-                                outputDiv.innerHTML += '$ Enter password: <input id="input" type="password" autofocus /><br>';
-                                stage = 1;
-                            } else if (stage === 1) {
-                                // Handle password
-                                password = inputText;
-                                outputDiv.innerHTML += '$ Password: ' + password + '<br>';
-                                
-                                // Send username and password to Flask for validation
-                                fetch('/', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({username: username, password: password})
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.status === "success") {
-                                        outputDiv.innerHTML += 'Correct! Flag: ' + data.flag + '<br>';
-                                    } else {
-                                        outputDiv.innerHTML += data.message + '<br>';
-                                        stage = 0; // Reset to ask for username again
-                                        outputDiv.innerHTML += '$ Enter username: <input id="input" type="text" autofocus /><br>';
-                                    }
-                                });
+                    function submitCredentials() {
+                        var username = document.getElementById('username').value;
+                        var password = document.getElementById('password').value;
+                        
+                        // Display the entered credentials
+                        var outputDiv = document.getElementById('output');
+                        outputDiv.innerHTML += '$ Username: ' + username + '<br>';
+                        outputDiv.innerHTML += '$ Password: ' + password + '<br>';
+                        
+                        // Send username and password to Flask for validation
+                        fetch('/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({username: username, password: password})
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                outputDiv.innerHTML += 'Correct! Flag: ' + data.flag + '<br>';
+                            } else {
+                                outputDiv.innerHTML += data.message + '<br>';
                             }
-                            
-                            // Clear input field
-                            document.getElementById('input').value = '';
-                        }
-                    });
-
-                    // Start by asking for the username
-                    window.onload = function() {
-                        let outputDiv = document.getElementById('output');
-                        outputDiv.innerHTML += '$ Enter username: <input id="input" type="text" autofocus /><br>';
-                    };
+                        });
+                    }
                 </script>
             </body>
         </html>
