@@ -21,6 +21,33 @@ def terminal():
             # Check username
             if input_text == USERNAME:
                 username = input_text
+                response = make_response(render_template_string("""
+                    <html>
+                        <head>
+                            <style>
+                                body {
+                                    background-color: black;
+                                    color: lightgreen;
+                                    font-family: 'Courier New', monospace;
+                                    padding: 20px;
+                                }
+                                .terminal {
+                                    white-space: pre-wrap;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="terminal">
+$ Correct username. Enter password:
+<form method="POST">
+    <input type="text" name="input_text" placeholder="Enter text" style="background: black; color: lightgreen; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; width: 100%;" autofocus required><br>
+</form>
+                            </div>
+                        </body>
+                    </html>
+                """))
+                response.set_cookie('username', username)
+                return response
             else:
                 error_message = "Invalid username. Try again."
         elif password is None:
