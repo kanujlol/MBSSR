@@ -47,6 +47,18 @@ def terminal():
                     input:focus {
                         outline: none;
                     }
+                    button {
+                        background-color: green;
+                        color: black;
+                        border: none;
+                        padding: 10px 20px;
+                        font-family: 'Cousine', monospace;
+                        font-size: 18px;
+                        cursor: pointer;
+                    }
+                    button:hover {
+                        background-color: #4CAF50;
+                    }
                 </style>
             </head>
             <body>
