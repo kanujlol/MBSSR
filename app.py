@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template_string, make_response
 
 app = Flask(__name__)
 
@@ -9,33 +9,24 @@ FLAG = "flag{the_game_is_afoot}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
-    # Initialize variables to keep track of input
-    if 'username' not in request.cookies:
-        session_data = {
-            'username': None,
-            'password': None,
-            'error_message': ""
-        }
-    else:
-        session_data = {
-            'username': request.cookies.get('username'),
-            'password': request.cookies.get('password'),
-            'error_message': ""
-        }
+    # Initialize session data
+    username = request.cookies.get('username')
+    password = request.cookies.get('password')
+    error_message = ""
 
     if request.method == "POST":
         input_text = request.form.get("input_text")
 
-        if session_data['username'] is None:
+        if username is None:
             # Check username
             if input_text == USERNAME:
-                session_data['username'] = input_text
+                username = input_text
             else:
-                session_data['error_message'] = "Invalid username. Try again."
-        elif session_data['password'] is None:
+                error_message = "Invalid username. Try again."
+        elif password is None:
             # Check password
             if input_text == PASSWORD:
-                session_data['password'] = input_text
+                password = input_text
                 return render_template_string("""
                     <html>
                         <head>
@@ -59,19 +50,18 @@ $ Correct! Here's the flag:
                         </body>
                     </html>
                 """, flag=FLAG)
-
             else:
-                session_data['error_message'] = "Invalid password. Try again."
+                error_message = "Invalid password. Try again."
 
     # Determine which prompt to show
-    if session_data['username'] is None:
+    if username is None:
         prompt = "Enter username: "
-    elif session_data['password'] is None:
+    elif password is None:
         prompt = "Enter password: "
     else:
         prompt = ""
 
-    response = render_template_string("""
+    response = make_response(render_template_string("""
         <html>
             <head>
                 <style>
@@ -96,11 +86,11 @@ $ {{ prompt }}
                 </div>
             </body>
         </html>
-    """, error_message=session_data['error_message'], prompt=prompt)
+    """, error_message=error_message, prompt=prompt))
 
     # Save the session data in cookies
-    response.set_cookie('username', session_data['username'])
-    response.set_cookie('password', session_data['password'])
+    response.set_cookie('username', username if username else "")
+    response.set_cookie('password', password if password else "")
 
     return response
 
