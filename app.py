@@ -6,7 +6,7 @@ app.secret_key = "supersecretkey"  # This is required for session management
 # Sample username and password
 USERNAME = "sherlock"
 PASSWORD = "sherlock123"
-FLAG = "IET{$$MB}"
+FLAG = "flag{the_game_is_afoot}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
@@ -47,8 +47,6 @@ def terminal():
                         </head>
                         <body>
                             <div class="terminal">
-Welcome to the Interactive Terminal
-
 $ Enter username: {{ username }}
 $ Enter password: {{ password }}
 $ Correct! Here's the flag:
@@ -86,8 +84,6 @@ $ Correct! Here's the flag:
             </head>
             <body>
                 <div class="terminal">
-Welcome to the Interactive Terminal
-
 $ {{ error_message }}
 $ {{ prompt }}
 <form method="POST">
