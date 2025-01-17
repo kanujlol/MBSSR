@@ -5,7 +5,7 @@ app = Flask(__name__)
 # Sample username and password
 USERNAME = "sherlock"
 PASSWORD = "sherlock-ed"
-FLAG = "flag{$$MB}"
+FLAG = "IET{$$MB}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
@@ -17,14 +17,14 @@ def terminal():
     if request.method == "POST":
         if not username:
             # If username is not yet entered, check the entered username
-            entered_username = request.form.get("username")
+            entered_username = request.form.get("input_text")
             if entered_username == USERNAME:
                 username = entered_username
             else:
                 error_message = "Invalid username. Try again."
         elif not password:
             # If username is correct, check the entered password
-            entered_password = request.form.get("password")
+            entered_password = request.form.get("input_text")
             if entered_password == PASSWORD:
                 password = entered_password
             else:
@@ -33,15 +33,28 @@ def terminal():
         if username and password:
             return render_template_string("""
                 <html>
+                    <head>
+                        <style>
+                            body {
+                                background-color: black;
+                                color: green;
+                                font-family: 'Courier New', monospace;
+                                padding: 20px;
+                            }
+                            .terminal {
+                                white-space: pre-wrap;
+                            }
+                        </style>
+                    </head>
                     <body>
-                        <pre>
+                        <div class="terminal">
 Welcome to the Interactive Terminal
 
 $ Enter username: {{ username }}
 $ Enter password: {{ password }}
 $ Correct! Here's the flag:
 {{ flag }}
-                        </pre>
+                        </div>
                     </body>
                 </html>
             """, username=username, password=password, flag=FLAG)
@@ -56,18 +69,29 @@ $ Correct! Here's the flag:
 
     return render_template_string("""
         <html>
+            <head>
+                <style>
+                    body {
+                        background-color: black;
+                        color: green;
+                        font-family: 'Courier New', monospace;
+                        padding: 20px;
+                    }
+                    .terminal {
+                        white-space: pre-wrap;
+                    }
+                </style>
+            </head>
             <body>
-                <pre>
+                <div class="terminal">
 Welcome to the Interactive Terminal
 
 $ {{ error_message }}
 $ {{ prompt }}
 <form method="POST">
-    <input type="text" name="username" placeholder="Enter username" style="display: {{ 'none' if username else 'inline' }};" required><br>
-    <input type="password" name="password" placeholder="Enter password" style="display: {{ 'inline' if username else 'none' }};" required><br>
-    <button type="submit" style="display: none;"></button>
+    <input type="text" name="input_text" placeholder="Enter text" style="background: black; color: green; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; width: 100%;" autofocus required><br>
 </form>
-                </pre>
+                </div>
             </body>
         </html>
     """, error_message=error_message, prompt=prompt, username=username)
