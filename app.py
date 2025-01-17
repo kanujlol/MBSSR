@@ -1,7 +1,6 @@
-from flask import Flask, request, render_template_string, session
+from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Required for session management
 
 # Sample username and password
 USERNAME = "sherlock"
@@ -10,26 +9,26 @@ FLAG = "flag{the_game_is_afoot}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
-    # Initialize session variables if not already set
-    if 'username' not in session:
-        session['username'] = None
-    if 'password' not in session:
-        session['password'] = None
-    error_message = ""
+    # Initialize variables to keep track of input
+    session_data = {
+        'username': None,
+        'password': None,
+        'error_message': ""
+    }
 
     if request.method == "POST":
         input_text = request.form.get("input_text")
 
-        if session['username'] is None:
+        if session_data['username'] is None:
             # Check username
             if input_text == USERNAME:
-                session['username'] = input_text
+                session_data['username'] = input_text
             else:
-                error_message = "Invalid username. Try again."
-        elif session['password'] is None:
+                session_data['error_message'] = "Invalid username. Try again."
+        elif session_data['password'] is None:
             # Check password
             if input_text == PASSWORD:
-                session['password'] = input_text
+                session_data['password'] = input_text
                 return render_template_string("""
                     <html>
                         <head>
@@ -55,12 +54,12 @@ $ Correct! Here's the flag:
                 """, flag=FLAG)
 
             else:
-                error_message = "Invalid password. Try again."
+                session_data['error_message'] = "Invalid password. Try again."
 
     # Determine which prompt to show
-    if session['username'] is None:
+    if session_data['username'] is None:
         prompt = "Enter username: "
-    elif session['password'] is None:
+    elif session_data['password'] is None:
         prompt = "Enter password: "
     else:
         prompt = ""
@@ -90,7 +89,7 @@ $ {{ prompt }}
                 </div>
             </body>
         </html>
-    """, error_message=error_message, prompt=prompt)
+    """, error_message=session_data['error_message'], prompt=prompt)
 
 if __name__ == "__main__":
     app.run(debug=True)
