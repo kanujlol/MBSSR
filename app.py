@@ -9,7 +9,6 @@ FLAG = "flag{the_game_is_afoot}"
 
 @app.route("/", methods=["GET", "POST"])
 def terminal():
-    # Variables to store the state of input prompts
     username = None
     password = None
     error_message = ""
@@ -91,6 +90,11 @@ def terminal():
                     input:focus {
                         outline: none;
                     }
+                    button {
+                        background-color: black;
+                        color: green;
+                        border: none;
+                    }
                 </style>
             </head>
             <body>
@@ -99,10 +103,10 @@ def terminal():
 
                     $ {{ error_message }}
                     $ {{ prompt }}
-                    <form method="POST">
+                    <form method="POST" action="/">
                         <input type="text" name="username" placeholder="Enter username" style="display: {{ 'none' if username else 'inline' }};" required><br>
                         <input type="password" name="password" placeholder="Enter password" style="display: {{ 'inline' if username else 'none' }};" required><br>
-                        <button type="submit" style="display: none;"></button>
+                        <button type="submit">Submit</button>
                     </form>
                 </div>
             </body>
